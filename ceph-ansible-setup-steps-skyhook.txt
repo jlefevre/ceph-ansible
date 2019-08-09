@@ -1,0 +1,84 @@
+ceph-ansible deployment
+
+## get ceph/ ansible, the right versions for luminous
+## stable-3.2 Supports Ceph versions luminous and mimic. This branch requires Ansible version 2.6.
+
+
+
+
+git clone https://github.com/ceph/ceph-ansible.git
+git checkout stable-3.2
+
+# ceph-ansible code changes: change branch name here from 'main' to 'skyhook-luminous'
+https://github.com/ceph/ceph-ansible/blob/master/roles/ceph-common/tasks/installs/debian_custom_repository.yml#L4
+
+# change requirements.txt to specify ansible in range >=2.6 <2.7
+pip install -r requirements.txt   // do we need to change this to reflect ansible version 2.6
+
+# set host manchines in an inventory file such as below, invoked by
+# ansible-playbook -i <path/to/inventoryfile>
+[mons]
+client0
+
+[mgrs]
+client0
+
+[osds]
+osd1
+osd2
+
+...
+
+
+create playbook file: <site.yml>
+uncertain: I think we can just rename use this file as-is. ?
+
+
+CLIENTS.yml
+
+set copy admin key to true
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/clients.yml.sample#L18
+
+uncertain: where/when do we generate a key?  let it complain first
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/clients.yml.sample#L49
+
+
+
+OSDS.yml
+
+set the dev paths here for osds on g1,g2,g5
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/osds.yml.sample
+
+uncomment this to set osds_per_device=1
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/osds.yml.sample#L111
+
+uncertain:  leave these as the bluestore defaults for now, bluestore is set in groupvars all bloew
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/osds.yml.sample#L85
+
+
+
+groupvars ALL.yml
+
+set longer-term OSD options here: e.g., bluestore, max write sizes, etc.
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L370
+
+Need to put our ceph.conf additions here, shorter-term testing osd options can go here
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L546
+
+set to custom repo here
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L139
+
+set repo url here
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L238
+
+uncertain: leave keyring path as default, see if auto-generated or complains
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L272
+
+uncertain: if we need to manually install deps libs, we could possibly add them here:
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L83
+
+uncertain: if we need to set ceph cluster name, we could set here instead of using default
+https://github.com/ceph/ceph-ansible/blob/master/group_vars/all.yml.sample#L45
+
+
+
