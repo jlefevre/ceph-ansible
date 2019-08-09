@@ -86,7 +86,7 @@ osd_auto_discovery: false
 #
 # Note: This scenario uses the ceph-disk tool to provision OSDs
 
-#osd_scenario: dummy
+osd_scenario: collocated
 #valid_osd_scenarios:
 #  - collocated
 #  - non-collocated
