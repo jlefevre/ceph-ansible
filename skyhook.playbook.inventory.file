@@ -1,0 +1,9 @@
+[mons]
+client0
+
+[mgrs]
+client0
+
+[osds]
+osd1
+osd2
