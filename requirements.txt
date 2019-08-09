@@ -1,4 +1,5 @@
 # These are Python requirements needed to run ceph-ansible master
+# jpl: did not need to change ansible range for skyhook-luminous, already is >=2.6, <2.7
 notario>=0.0.13
 ansible~=2.6,<2.7
 netaddr
