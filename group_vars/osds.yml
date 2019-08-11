@@ -42,8 +42,9 @@ dummy:
 # cloudlab c220g5 should use sdb for OSD's (the SSD)
 #
 
-devices: /dev/sdb
-#  - /dev/sdb
+devices:
+  - /dev/sdb
+# - /dev/sdb
 #  - /dev/sdc
 #  - /dev/sdd
 #  - /dev/sde

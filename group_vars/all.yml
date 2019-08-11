@@ -16,7 +16,7 @@ dummy:
 ######################################
 # Releases name to number dictionary #
 ######################################
-#ceph_release_num:
+ceph_release_num:
 #  dumpling: 0.67
 #  emperor: 0.72
 #  firefly: 0.80
@@ -25,7 +25,7 @@ dummy:
 #  infernalis: 9
 #  jewel: 10
 #  kraken: 11
-#  luminous: 12
+   luminous: 12
 #  mimic: 13
 #  nautilus: 14
 #  dev: 99
@@ -126,6 +126,20 @@ dummy:
 # INSTALL #
 ###########
 #ceph_repository_type: dummy
+ceph_repository_type: custom
+
+
+
+
+# on cloudlab:
+# eno1 on 128.x.x.x addr is public ip (1GB NIC)
+# enp94s0f0 on 10.x.x.x addr is internal ip (10GB NIC)
+# jlefevre@client0:~$ ifconfig
+# eno1:
+#    inet 128.105.144.54  netmask 255.255.252.0  broadcast 128.105.147.255
+# enp94s0f0:
+#    inet 10.10.1.2  netmask 255.255.255.0  broadcast 10.10.1.255
+
 
 # ORIGIN SOURCE
 #
@@ -158,6 +172,7 @@ ceph_repository: custom
 #ceph_mirror: http://download.ceph.com
 #ceph_stable_key: https://download.ceph.com/keys/release.asc
 #ceph_stable_release: dummy
+ceph_stable_release: luminous
 #ceph_stable_repo: "{{ ceph_mirror }}/debian-{{ ceph_stable_release }}"
 
 #nfs_ganesha_stable: true # use stable repos for nfs-ganesha
@@ -291,23 +306,57 @@ ceph_custom_repo: https://github.com/uccross/skyhookdm-ceph
 #ceph_keyring_permissions: '0600'
 
 #cephx: true
+# from here
+# https://docs.ceph.com/ceph-ansible/master/#ceph-conf-configuration-file
+# The following sections in ceph.conf are supported:
+    #~ [global]
+    #~ [mon]
+    #~ [osd]
+    #~ [mds]
+    #~ [client.rgw.{instance_name}]
+#~ An example:
+#~ ceph_conf_overrides:
+   #~ global:
+     #~ foo: 1234
+     #~ bar: 5678
+   #~ osd:
+     #~ osd_mkfs_type: ext4
 
-enable_experimental_unrecoverable_data_corrupting_features: *
-objecter_inflight_op_bytes: 2147483648
-debug_ms: 1
-debug_osd: 25
-debug_objecter:  20
-debug_monc: 20
-debug_mgrc: 20
-debug_journal:  20
-debug_filestore: 20
-debug_bluestore: 30
-debug_bluefs: 20
-debug_rocksdb: 10
-debug_bdev: 20
-debug_rgw: 20
-debug_reserver: 10
-debug_objclass: 20
+ceph_conf_overrides:
+   global:
+     enable_experimental_unrecoverable_data_corrupting_features: *
+     objecter_inflight_op_bytes: 2147483648
+      debug_ms: 1
+      debug_osd: 25
+      debug_objecter:  20
+      debug_monc: 20
+      debug_mgrc: 20
+      debug_journal:  20
+      debug_filestore: 20
+      debug_bluestore: 30
+      debug_bluefs: 20
+      debug_rocksdb: 10
+      debug_bdev: 20
+      debug_rgw: 20
+      debug_reserver: 10
+      debug_objclass: 20
+   osd:
+      osd_pool_default_size: 1
+      osd_pool_default_min_size: 1
+      osd_crush_chooseleaf_type: 0
+      osd_pool_default_pg_num: 128
+      osd_pool_default_pgp_num: 128
+      osd_class_load_list: *
+      osd_class_default_list: *
+      osd_max_write_size: 1000
+      osd_max_object_size: 1024000000
+
+# NOTE: max write size must be strictly less than max obj size.
+# The maximum size of a write in megabytes.
+# osd_max_write_size: 128
+# The maximum size of a RADOS object in bytes.
+# osd_max_object_size: 256000000
+
 
 ## Client options
 #
@@ -358,6 +407,9 @@ debug_objclass: 20
 # Eg. If you want to specify for each monitor which address the monitor will bind to you can set it in your **inventory host file** by using 'monitor_address' variable.
 # Preference will go to monitor_address if both monitor_address and monitor_interface are defined.
 #monitor_interface: interface
+#monitor_interface: eth1 (Example)
+# note this is the NIC on the cloudlab public IP, we use the internal private IP for OSD data xfer.
+monitor_interface: eno1
 #monitor_address: 0.0.0.0
 #monitor_address_block: subnet
 # set to either ipv4 or ipv6, whichever your network is using
@@ -385,34 +437,16 @@ mon_allow_pool_delete: true
 #journal_size: 5120 # OSD journal size in MB
 #block_db_size: -1 # block db size in bytes for the ceph-volume lvm batch. -1 means use the default of 'as big as possible'.
 #public_network: 0.0.0.0/0
+#public_network: "192.168.3.0/24" (example)
+public_network: "128.105.147.0/24"
 #cluster_network: "{{ public_network | regex_replace(' ', '') }}"
+# cluster_network: "192.168.4.0/24" (example)
+cluster_network: "10.10.1.0/24"
+
 #osd_mkfs_type: xfs
 #osd_mkfs_options_xfs: -f -i size=2048
 #osd_mount_options_xfs: noatime,largeio,inode64,swalloc
-
-
 osd_objectstore: bluestore
-osd_pool_default_size: 1
-osd_pool_default_min_size: 1
-osd_crush_chooseleaf_type: 0
-osd_pool_default_pg_num: 128
-osd_pool_default_pgp_num: 128
-osd_class_load_list: *
-osd_class_default_list: *
-
-# NOTE: max write size must be strictly less than max obj size.
-
-# The maximum size of a write in megabytes.
-# osd_max_write_size: 128
-osd_max_write_size: 1000
-
-# The maximum size of a RADOS object in bytes.
-# osd_max_object_size: 256000000
-osd_max_object_size: 1024000000
-
-
-
-
 
 # xattrs. by default, 'filestore xattr use omap' is set to 'true' if
 # 'osd_mkfs_type' is set to 'ext4'; otherwise it isn't set. This can
